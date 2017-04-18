@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Patient Area</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="../css/bootstrap-datepicker.min.css">
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/moment.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-datetimepicker.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/general.js"></script>
+    <script>
+        window.onload = function WindowLoad(event) {
+            authenticate(event);
+        };
+
+        function authenticate(event) {
+            event.preventDefault();
+
+            var accessToken = window.localStorage.getItem("accessToken");
+            var url = serverBasePath + "user";
+            /*$.get(url, {"token": accessToken}, function(data, status){
+             if(status == "success") {
+             alert(data);
+             if (data.success != false && data.success !== "undefined") {
+             if (data[0] !== 'undefined') {
+             render_data(data[0]);
+             }
+             }
+            render_data();
+        }
+        window.location.href = "../error.html";
+        });*/
+        }
+
+        function render_data(data) {
+            //Set the user's name in the top-left corner of the screen, within the menu bar
+            $(".navbar-brand").text(window.localStorage.getItem("userName"));
+        }
+
+        function make_appointment() {
+            var url = serverBasePath + "booking";
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {
+                    "token": window.localStorage.getItem("accessToken"),
+                    "doctor_id": 1,
+                    "date": 30,
+                    "comment": "new comment"
+                },
+                success: function (data, success) {
+                    alert("received response from making appointment");
+                    alert("data: " + data);
+                    alert("success: " + success);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<!--Following nav code contains boilerplate code for Bootstrap, inspired by source of http://getbootstrap.com/examples/theme/-->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                &lt;!&ndash;<span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>&ndash;&gt;
+            </button>
+            <a class="navbar-brand" href="#">Medical Bookings</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="welcome.html">My Appointments</a></li>
+                <li class="active"><a href="#">Make an Appointment</a></li>
+                <li class="active"><a href="../about.html">About</a></li>
+                <li class="active"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container" style="top: 50px;">
+    <div class="row">
+        <div class='col-sm-6'>
+            <div class="form-group">
+                <div class='input-group date' id='datetimepicker1'>
+                    <input type='text' class="form-control" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker();
+            });
+        </script>
+    </div>
+</div>
+</body>

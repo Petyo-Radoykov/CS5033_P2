@@ -27,6 +27,9 @@ app.use(bodyParser.json());
 // use morgan to log requests to the console
 app.use(morgan('dev'));
 
+// add a public directory to serve pages from
+app.use(express.static('pages'));
+
 // The REST API
 // Not Secured
 var router_welcome = require('./routes/welcome');

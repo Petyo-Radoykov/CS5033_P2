@@ -1,14 +1,61 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-
-  <title>Title</title>
-
+    <link rel="stylesheet" type="text/css" href="css/login_style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/general.js"></script>
+    <script src="js/login.js"></script>
 </head>
 
 <body>
-Index page.
+
+<h2>Medical Booking System: Please Login</h2>
+
+<button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Login</button>
+
+<div id="id01" class="modal">
+
+    <form class="modal-content animate">
+        <div class="imgcontainer">
+            <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+        </div>
+
+        <div class="container">
+            <label><b>Username</b></label>
+            <input id="name" type="text" placeholder="Enter Username" required>
+
+            <label><b>Password</b></label>
+            <input id="pass" type="password" placeholder="Enter Password" required>
+
+            <button onclick="login(event)">Login</button>
+
+            <input type="checkbox" checked="checked"> Remember me DO WE NEED THIS?
+
+            <label id="msg"><b></b></label>
+        </div>
+
+        <div class="container" style="background-color:#f1f1f1">
+            <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">
+                Cancel
+            </button>
+            <span class="psw">DO WE NEED THIS? Forgot <a href="#">password?</a></span>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Get the modal
+    var modal = document.getElementById('id01');
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
 </body>
 </html>
