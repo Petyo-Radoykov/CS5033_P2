@@ -48,6 +48,7 @@ var router_user_id_booking_id = require('./routes/user_id_booking_id');
 var router_booking_avl = require('./routes/availibility');
 var router_record = require('./routes/record');
 var router_test = require('./routes/test');
+var router_doctor = require('./routes/doctor');
 
 
 
@@ -75,8 +76,9 @@ var port = process.env.PORT || 8080;
 app.use('/api', router_welcome);
 app.use('/api', router_authenticate);
 
-app.use('/api', router_users);
+//app.use('/api', router_users);
 
+// The secured routes
 app.use('/api', router_middleware);
 
 
@@ -87,7 +89,7 @@ app.use('/api', router_user_id_booking_id);
 app.use('/api', router_booking_avl);
 app.use('/api', router_record);
 app.use('/api', router_test);
-
+app.use('/api', router_doctor);
 /*##################
 # START THE SERVER #
 ##################*/
