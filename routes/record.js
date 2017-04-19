@@ -55,7 +55,6 @@ router.route('/record')
     .get(function(req, res) {
 		
 		var patient_id = req.body.patient_id || req.query.patient_id || req.headers['patient_id'];
-        var record_date = req.body.record_date || req.query.record_date || req.headers['record_date']; 
 		
         Record.find({
 						"patient_id": patient_id, 
@@ -66,8 +65,7 @@ router.route('/record')
 					}, function(err, record) {
             if (err)
                  res.send(err);
-			 
-			//console.log(record)	
+			 	
 			_id = record[0]._id
 			doctors_content = record[0].doctors_content
 			record_content = record[0].record_content
