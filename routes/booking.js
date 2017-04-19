@@ -1,5 +1,6 @@
 var express = require('express');
 var Booking     = require('../app/models/booking');
+var User     = require('../app/models/user');
 var D_Availability     = require('../app/models/doctor_availability');
 
 // ROUTES FOR OUR API
@@ -24,12 +25,9 @@ router.route('/booking')
         
 		// create a new instance of the Booking model
         var booking = new Booking();  
-
-		// create a new instance of the D_Availability model
-        var availibility = new D_Availability();  	
+ 	
 
 		// set the booking attributes (sent from the request)
-		
         booking.patient_id = req.decoded._doc._id;  
         booking.doctor_id = req.body.doctor_id;  
         booking.date = req.body.date; 
@@ -48,8 +46,8 @@ router.route('/booking')
 		// Hours part from the timestamp
 		var hours = date.getHours();
 		
-		//console.log(date)
-		//console.log(hours)
+		console.log(date)
+		console.log(hours)
 		
 		
 		var currentDate = new Date(booking.date*1000);
@@ -60,20 +58,6 @@ router.route('/booking')
 		
 		var unixCurrentDay = currentDate.getTime() / 1000
 		var unixNextDay = nextDay.getTime() / 1000
-		
-		availibility.slot_taken = hours;
-		
-		// set the availibility attributes (sent from the request)	
-        availibility.booking_id = booking._id; 
-		availibility.doctor_id = booking.doctor_id; 		
-        availibility.date = booking.date; 
-		
-		
-		// save the availibility and check for errors
-        availibility.save(function(err) {
-            if (err)
-                res.send(err);
-        });
         
     })
 	
@@ -102,9 +86,73 @@ router.route('/booking')
             res.json({ message: 'Successfully deleted' });
         });
     });
+	
+	
+router.route('/booking/availability')
+
+    .get(function(req, res) {	
+        Booking.find(  {
+							date: { 
+								$gt: req.headers['start_date'], 
+								$lt: req.headers['end_date'] 
+								}
+						},  
+						{
+							patient_id: false,
+							_id: false,
+							__v: false,
+							comment: false,
+							date: false,
+						}, 
+						function(err, booked_doctor_ids) {
+							if (err)
+								res.send(err);
+							///////////////////////////////////////////////
+							var b_doctor_ids = []
+							
+							for (var i = 0; i < booked_doctor_ids.length; i++) {
+								b_doctor_ids[i] = booked_doctor_ids[i].doctor_id;
+							}
+							
+							User.find(	{
+										_id:{$nin:b_doctor_ids},
+										user_type : "Doctor"
+										},   
+										{
+											user_type: false,
+											password: false,
+											__v: false,
+										},
+										function(err, users) {
+											if (err)
+											res.send(err);
+										
+											res.json(users);
+										
+										});
+							
+							///////////////////////////////////////////////						
+							
+        });
+    })
+
+router.route('/booking/all')
+	// GET booking in time range (accessed at GET http://localhost:8080/api/booking)
+    .get(function(req, res) {	
+        Booking.find({}, function(err, booking) {
+            if (err)
+                res.send(err);
+            res.json(booking);
+        });
+    })	
 
 
+	
+	
 module.exports = router;
+
+
+
 
 
 

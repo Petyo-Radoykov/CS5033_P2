@@ -1,7 +1,5 @@
 var express = require('express');
 var User     = require('../app/models/user');
-var config = require('../config'); // get our config file
-var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
 // ROUTES FOR OUR API
 // get an instance of the express Router
@@ -20,7 +18,7 @@ router.route('/users')
 		// set the users attributes (sent from the request)	
         user.name = req.body.name;  
         user.password = req.body.password;  
-        user.user_type = req.body.user_type;  
+        user.user_type = req.body.user_type;
 
         // save the user and check for errors
         user.save(function(err) {
