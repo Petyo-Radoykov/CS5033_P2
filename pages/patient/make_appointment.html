@@ -18,10 +18,12 @@
     <script src="../js/general.js"></script>
     <script>
         $(document).ready(function () {
+            var accessToken = window.localStorage.getItem("accessToken");
+
+            check_token_present(accessToken);//See comment in function in general.js
+
             //selectedTime keeps track of the time selected by the date_time_selection DOM element
             var selectedTime = new Date().getTime()/1000;
-
-            var accessToken = window.localStorage.getItem("accessToken");
             $(".navbar-brand").text(window.localStorage.getItem("userName"));
 
             //For efficient JQuery use, make a variable containing reference to the DOM
@@ -115,7 +117,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>&ndash;&gt;
             </button>
-            <a class="navbar-brand" href="#">Medical Bookings</a>
+            <a class="navbar-brand" href="#">Patient</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">

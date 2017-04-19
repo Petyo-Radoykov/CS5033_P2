@@ -19,6 +19,9 @@ function login(event) {
             window.localStorage.setItem("accessToken", data.token);
             window.localStorage.setItem("userType", data.user_type);
             window.localStorage.setItem("userName", name);
+            if (data.user_type==='Patient') {
+                window.localStorage.setItem("patientHealthcareIdNumber", data.user_id);
+            }
             redirect(data);
         } else {
             $('#msg').text("\t" + data.message).css("color", "red");

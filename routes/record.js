@@ -55,32 +55,29 @@ router.route('/record')
     .get(function(req, res) {
 		
 		var patient_id = req.body.patient_id || req.query.patient_id || req.headers['patient_id'];
-		
         Record.find({
-						"patient_id": patient_id, 
-						record_date: { 
-								$gt: req.headers['start_date'], 
-								$lt: req.headers['end_date'] 
-								}
-					}, function(err, record) {
+        	"patient_id": patient_id
+        }, function(err, record) {
             if (err)
                  res.send(err);
-			 	
-			_id = record[0]._id
-			doctors_content = record[0].doctors_content
-			record_content = record[0].record_content
-			record_date = record[0].record_date
-			patient_id = record[0].patient_id
-			doctor_id = record[0].doctor_id
-	
+			var _id = record[0]._id;
+			var record_content = record[0].record_content;
+			var record_date = record[0].date;
+			patient_id = record[0].patient_id;
+			var doctor_id = record[0].doctor_id;
 
 			if (req.decoded._doc.user_type == "Nurse") {
-				nurseRecord = "{_id: " + _id + ", record_content: '"+ record_content + "', record_date: " + record_date + " , patient_id: '" + patient_id + "' , doctor_id: " + doctor_id + "}"
-				res.json(nurseRecord);	
+				nurseRecord = "{" +
+                    "_id: " + _id + "," +
+                    "record_content: \""+ record_content + "\"," +
+                    "record_date: \"" + record_date + "\"," +
+                    "patient_id: \"" + patient_id + "\"," +
+                    "doctor_id: \"" + doctor_id + "\"" +
+                    "}";
+				res.json(nurseRecord);
 			}	else if (req.decoded._doc.user_type == "Doctor") {
 				res.json(record);
 			}
-
         });
     })
 	

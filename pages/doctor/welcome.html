@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Patient Area</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/general.js"></script>
+    <script>
+        $(document).ready(function () {
+            var accessToken = window.localStorage.getItem("accessToken");
+
+            check_token_present(accessToken);//See comment in function in general.js
+
+            //Set the user's name in the top-left corner of the screen, within the menu bar
+            $(".navbar-brand").text(window.localStorage.getItem("userName"));
+
+            //Set what happens when the search button is clicked
+            $("#search-patient-button").on("click", function () {
+                window.location.href = "search_results.html?patient_id=" + $("#search-patient-input").val();
+            });
+        });
+    </script>
+</head>
+<body>
+<!--Following nav code contains boilerplate code for Bootstrap, inspired by source of http://getbootstrap.com/examples/theme/-->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Doctor</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Search</a></li>
+                <li class="active"><a href="../about.html">About</a></li>
+                <li class="active"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<br><br><br><br><br><br><br><br>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="form-group">
+                <label for="search-patient-input">Search for patient by health-care ID number:</label>
+                <br />
+                <input type="text" id="search-patient-input">
+                <br />
+                <button type="button" id="search-patient-button" style="margin-top: 10px;">Lookup Health Record</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
