@@ -13,56 +13,95 @@
     <script src="../js/moment.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/bootstrap-datetimepicker.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+    <script src="../js/bootstrap-select.min.js"></script>
     <script src="../js/settings.js"></script>
     <script src="../js/general.js"></script>
     <script>
-        window.onload = function WindowLoad(event) {
-            authenticate(event);
-        };
-
-        function authenticate(event) {
-            event.preventDefault();
+        $(document).ready(function () {
+            //selectedTime keeps track of the time selected by the date_time_selection DOM element
+            var selectedTime = new Date().getTime()/1000;
 
             var accessToken = window.localStorage.getItem("accessToken");
-            var url = serverBasePath + "user";
-            /*$.get(url, {"token": accessToken}, function(data, status){
-             if(status == "success") {
-             alert(data);
-             if (data.success != false && data.success !== "undefined") {
-             if (data[0] !== 'undefined') {
-             render_data(data[0]);
-             }
-             }
-            render_data();
-        }
-        window.location.href = "../error.html";
-        });*/
-        }
-
-        function render_data(data) {
-            //Set the user's name in the top-left corner of the screen, within the menu bar
             $(".navbar-brand").text(window.localStorage.getItem("userName"));
-        }
 
-        function make_appointment() {
-            var url = serverBasePath + "booking";
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: {
-                    "token": window.localStorage.getItem("accessToken"),
-                    "doctor_id": 1,
-                    "date": 30,
-                    "comment": "new comment"
-                },
-                success: function (data, success) {
-                    alert("received response from making appointment");
-                    alert("data: " + data);
-                    alert("success: " + success);
-                }
+            //For efficient JQuery use, make a variable containing reference to the DOM
+            //item with ID date_time_selection (since this item is manipulated multiple times)
+            var dateTimeSelector = $("#date_time_selection");
+
+            //Create a date time picker using https://eonasdan.github.io/bootstrap-datetimepicker/
+            dateTimeSelector.datetimepicker();
+
+            //And when the date or time is changed, call reloading of the available doctors at this time.
+            dateTimeSelector.on("dp.change", function (e) {
+                selectedTime = e.date.unix();
+                reload_available_doctors();
             });
-        }
+
+            //Set what happens when 'Make Booking' is clicked.
+            $("#make_booking_button").on("click", function () {
+                var url = serverBasePath + "booking";
+                var doctorId = $("#doctor_selection").selectpicker('val');
+                //Get the UNIX timestamp of when the appointment should start.
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        "token": window.localStorage.getItem("accessToken"),
+                        "doctor_id": doctorId,
+                        "date": selectedTime,
+                        "comment": $("#comments").val()
+                    },
+                    success: function (data, success) {
+                        alert(data.message);
+                    }
+                });
+            });
+
+            reload_available_doctors();
+
+            function reload_available_doctors() {
+                //We have assumed that each doctor's appointment is 1 hour long,
+                //thus the front-end asks only for the starting time not the finishing time.
+                //If requirements change to require a finish time to be specified by the patient,
+                //or for a different appointment length, this can be changed, either below
+                //or by setting a new value in defaultAppointmentLengthSeconds in the application settings.
+                var startDateUnix = selectedTime;
+                var endDateUnix = startDateUnix + defaultAppointmentLengthSeconds;
+                var url = serverBasePath + "booking/availability";
+
+                //We make an AJAX GET request to /api/booking/availability to find out
+                //which doctors are available at the selected time.
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('x-access-token', accessToken);
+                        xhr.setRequestHeader('start_date', startDateUnix);
+                        xhr.setRequestHeader('end_date', endDateUnix);
+                    },
+                    success: function (data, success) {
+                        if (success==="success") {
+                            var doctorSelector = $("#doctor_selection");
+
+                            //Remove all doctors currently listed:
+                            doctorSelector.find('option').remove();
+
+                            //For each doctor available at the selected time, add them to the doctor select.
+                            $.each(data, function (key, value) {
+                                var newOption = "<option value='" + value._id + "'>"
+                                    + value.name
+                                    + "</option>";
+                                doctorSelector.append(newOption);
+                            });
+
+                            //Necessary to 'refresh' the select since it uses Bootstrap Select
+                            //See here: https://silviomoreto.github.io/bootstrap-select/methods/
+                            doctorSelector.selectpicker("refresh");
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </head>
 <body>
@@ -91,33 +130,29 @@
 <br><br><br><br><br><br><br><br>
 <div class="container">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-8">
             <div class="form-group">
-                <label for="datetimeselection">Date and Time:</label><br />
-                <div class="input-group date" id="datetimeselection" style="padding-bottom: 10px;">
-                    <input type="text" class="form-control" />
+                <!--DateTimePicker from https://eonasdan.github.io/bootstrap-datetimepicker/ -->
+                <!--Code in following div inspired by documentation at above URL-->
+                <label for="date_time_selection">Date and Time:</label><br />
+                <div class="input-group date" id="date_time_selection" style="padding-bottom: 10px;">
+                    <input type="text" class="form-control"/>
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
 
-                <label for="doctorselection">Doctor to See:</label><br />
+                <label for="doctor_selection">Doctor to See:</label><br />
                 <!--Uses https://silviomoreto.github.io/bootstrap-select/-->
-                <select class="selectpicker" id="doctorselection">
-                    <option>Doctor 1</option>
-                    <option>Doctor 2</option>
-                </select>
+                <select class="selectpicker" id="doctor_selection"></select>
 
-                <label for="comments" style="padding-top: 10px;">Any Specific Information:</label><br />
-                <input type="text" id="comments" style="width: 80vh; margin-bottom: 10px;">
+                <br /><br />
+                <label for="comments">Any Specific Information:</label><br />
+                <input type="text" id="comments" style="width: 80vh">
+                <br /><br />
                 <button type="button" id="make_booking_button">Make Booking</button>
             </div>
         </div>
-        <script type="text/javascript">
-            $(function () {
-                $('#datetimepicker1').datetimepicker();
-            });
-        </script>
     </div>
 </div>
 </body>
