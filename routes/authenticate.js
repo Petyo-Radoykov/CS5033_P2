@@ -41,6 +41,7 @@ router.route('/authenticate')
 				  success: true,
 				  message: 'Enjoy your token!',
 				  user_type: user.user_type,
+				  user_id: user._id,
 				  token: token
 				});
 			  }   
