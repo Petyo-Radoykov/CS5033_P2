@@ -44,9 +44,62 @@
                     xhr.setRequestHeader('end_date', 300000000000);
                 },
                 success: function (data, success) {
-                    alert(data);
+                    if (success==="success") {
+                        $.each(data, function (key, value) {
+                            var date = new Date(value.date * 1000);
+
+                            var tableRow = "<tr>"
+                                + "<td>" + getNeatDate(date) + "</td>"
+                                + "<td>" + getNeatTime(date) + "</td>"
+                                + "<td>" + value.doctor_id + "</td>"
+                                + "</tr>";
+                            $("#appointments_table tr:last").after(tableRow);
+                        });
+                    }
                 }
             });
+        }
+        
+        function getNeatTime(date) {
+            //get a formatted string to display the time, in the user's timezone
+            var hours = date.getHours();
+            var hoursFormatted = (hours > 9) ? hours: "0" + hours;
+            var minutes = date.getMinutes();
+            var minutesFormatted = (minutes > 9) ? minutes: "0" + minutes;
+            return hoursFormatted + ":" + minutesFormatted;
+        }
+
+        function getNeatDate(date) {
+            //get a formatted string to display the date, in the user's timezone
+            return date.getDate() + " " + getMonthName(date.getMonth()) + " " + date.getFullYear();
+        }
+
+        function getMonthName(monthNumber) {switch (monthNumber) {
+                case 0:
+                    return "January";
+                case 1:
+                    return "February";
+                case 2:
+                    return "March";
+                case 3:
+                    return "April";
+                case 4:
+                    return "May";
+                case 5:
+                    return "June";
+                case 6:
+                    return "July";
+                case 7:
+                    return "August";
+                case 8:
+                    return "September";
+                case 9:
+                    return "October";
+                case 10:
+                    return "November";
+                case 11:
+                    return "December";
+            }
         }
 
         function render_data(data) {
@@ -79,17 +132,15 @@
         </div>
     </div>
 </nav>
-
+<br><br><br><br><br><br><br><br>
 <div class="row">
     <div class="col-md-6">
-        <table class="table">
+        <table class="table" id="appointments_table">
             <thead>
             <tr>
                 <th>Date</th>
                 <th>Time</th>
                 <th>Doctor/Nurse name</th>
-                <th>Location</th>
-                <th></th><!--Empty table head is for cancel buttons-->
             </tr>
             </thead>
         </table>
