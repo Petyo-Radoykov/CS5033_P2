@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Patient Area</title>
+    <title>Doctor Area</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
@@ -20,12 +20,26 @@
             //Set the user's name in the top-left corner of the screen, within the menu bar
             $(".navbar-brand").text(window.localStorage.getItem("userName"));
 
+            var url = serverBasePath + "record";
+            var time = Math.floor(new Date().getTime()/1000);
+            //Set what happens when the add button is clicked
             $("#button_add").on("click", function () {
-                window.location.href = "add_entry.html?patient_id=" + get_patient_id();
-
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        "token": window.localStorage.getItem("accessToken"),
+                        "patient_id": get_patient_id(),
+                        "date": time,
+                        "record_content": $("#record_content_input").val(),
+                        "doctors_content": $("#doctors_content_input").val()
+                    },
+                    success: function (data, success) {
+                        alert(data.message);
+                        window.location.href = "search_results.html?patient_id=" + get_patient_id();
+                    }
+                });
             });
-
-            load_table_data();
 
             function get_patient_id() {
                 var queryParams = window.location.search;
@@ -39,49 +53,6 @@
                 }
                 alert("Sorry, there was an error loading this patient's records. Please go back and try again.");
             }
-            
-            function load_table_data() {
-                var url = serverBasePath + "record";
-                var doctorUrl = serverBasePath + "doctor";
-                //The patient ID should be retrieved from the query parameter
-                var searchIdNumber = get_patient_id();
-
-                $.ajax({
-                    type: 'GET',
-                    url: doctorUrl,
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('x-access-token', accessToken);
-                    },
-                    success: function (doctorData, doctorSuccess) {
-                        if (doctorSuccess === "success") {
-                            $.ajax({
-                                type: 'GET',
-                                url: url,
-                                beforeSend: function (xhr) {
-                                    xhr.setRequestHeader('x-access-token', accessToken);
-                                    xhr.setRequestHeader('patient_id', searchIdNumber);
-                                },
-                                success: function (recordData, recordSuccess) {
-                                    if (recordSuccess==="success") {
-                                        $.each(recordData, function (key, value) {
-                                            //Concatenate a string containing the HTML for a table row, then add this to the table.
-                                            var editRecordContentHtml = "<input id='edit_record_content_"+ value._id + "' value=\"" + value.record_content + "\">";
-                                            var editDoctorContentHtml = "<input id='edit_doctor_content_"+ value._id + "' value=\"" + value.doctors_content + "\">";
-                                            var tableRow = "<tr>"
-                                                + "<td>" + findDoctorNameInList(doctorData, value.doctor_id) + "</td>"
-                                                + "<td>" + editRecordContentHtml + "</td>"
-                                                + "<td>" + editDoctorContentHtml + "</td>"
-                                                + "</tr>";
-                                            $("#records_table tr:last").after(tableRow);
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-
         });
     </script>
 </head>
@@ -112,15 +83,12 @@
     <div class="row">
         <div class="col-sm-8">
             <br><br><br><br>
-            <table class="table" id="records_table">
-                <thead>
-                <tr>
-                    <th>Doctor Name</th>
-                    <th>Record Content</th>
-                    <th>Doctor Content</th>
-                </tr>
-                </thead>
-            </table>
+            <label for="record_content_input">Record Content</label>
+            <input type="text" id="record_content_input">
+            <br>
+            <label for="doctors_content_input">Doctor Secret Content</label>
+            <input type="text" id="doctors_content_input">
+            <br>
             <button type="button" id="button_add">Add New Record</button>
         </div>
     </div>

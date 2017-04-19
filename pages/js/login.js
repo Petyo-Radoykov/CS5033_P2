@@ -21,6 +21,8 @@ function login(event) {
             window.localStorage.setItem("userName", name);
             if (data.user_type==='Patient') {
                 window.localStorage.setItem("patientHealthcareIdNumber", data.user_id);
+            } else if (data.user_type==='Doctor') {
+                window.localStorage.setItem("doctorIdNumber", data.user_id);
             }
             redirect(data);
         } else {

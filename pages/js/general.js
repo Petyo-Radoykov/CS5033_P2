@@ -24,6 +24,7 @@ function removeLocalStorageVars() {
     window.localStorage.removeItem("userType");
     window.localStorage.removeItem("userName");
     window.localStorage.removeItem("patientHealthcareIdNumber");
+    window.localStorage.removeItem("doctorIdNumber");
 }
 
 function findDoctorNameInList(doctorList, doctorId) {
