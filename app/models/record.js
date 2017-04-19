@@ -8,7 +8,7 @@ var Schema = mongoose.Schema;
 module.exports = mongoose.model('Record', new Schema({ 
     doctor_id: String, 
     patient_id: String, 
-    date: Number,
+    record_date: Number,
 	record_content: String,
 	doctors_content: String
 }));

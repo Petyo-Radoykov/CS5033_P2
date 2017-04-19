@@ -14,6 +14,8 @@ router.route('/record')
     // create a record (accessed at POST http://localhost:8080/api/record/)
     .post(function(req, res) {
 		
+		
+		
 		if(req.decoded._doc.user_type != "Doctor") {
 
 			return res.status(403).send({ 
@@ -29,10 +31,12 @@ router.route('/record')
 		// set the users attributes (sent from the request)	
 		// check header or url parameters or post parameters for token
         //record.doctor_id = req.body.doctor_id || req.query.doctor_id || req.headers['doctor_id'];
-        record.doctor_id = req.decoded._doc._id;
+       
+	    record.doctor_id = req.decoded._doc._id;
+
 		
         record.patient_id = req.body.patient_id || req.query.patient_id || req.headers['patient_id'];
-        record.date = req.body.date || req.query.date || req.headers['date']; 
+        record.record_date  = req.body.record_date || req.query.record_date || req.headers['record_date']; 
         record.record_content = req.body.record_content || req.query.record_content || req.headers['record_content'];  
         record.doctors_content = req.body.doctors_content || req.query.doctors_content || req.headers['doctors_content'];  
          
@@ -51,11 +55,11 @@ router.route('/record')
     .get(function(req, res) {
 		
 		var patient_id = req.body.patient_id || req.query.patient_id || req.headers['patient_id'];
-        var date = req.body.date || req.query.date || req.headers['date']; 
+        var record_date = req.body.record_date || req.query.record_date || req.headers['record_date']; 
 		
         Record.find({
 						"patient_id": patient_id, 
-						date: { 
+						record_date: { 
 								$gt: req.headers['start_date'], 
 								$lt: req.headers['end_date'] 
 								}
@@ -67,13 +71,13 @@ router.route('/record')
 			_id = record[0]._id
 			doctors_content = record[0].doctors_content
 			record_content = record[0].record_content
-			date = record[0].date
+			record_date = record[0].record_date
 			patient_id = record[0].patient_id
 			doctor_id = record[0].doctor_id
 	
 
 			if (req.decoded._doc.user_type == "Nurse") {
-				nurseRecord = "{_id: " + _id + ", record_content: '"+ record_content + "', date: " + date + " , patient_id: '" + patient_id + "' , doctor_id: " + doctor_id + "}"
+				nurseRecord = "{_id: " + _id + ", record_content: '"+ record_content + "', record_date: " + record_date + " , patient_id: '" + patient_id + "' , doctor_id: " + doctor_id + "}"
 				res.json(nurseRecord);	
 			}	else if (req.decoded._doc.user_type == "Doctor") {
 				res.json(record);
@@ -94,9 +98,9 @@ router.route('/record')
                 res.send(err);
 
 			// update the record's info (sent from the request)
-			if(req.body.date != undefined) {
-				record.date = req.body.date;
-				//console.log(record.date)
+			if(req.body.record_date != undefined) {
+				record.record_date = req.body.record_date;
+				//console.log(record.record_date)
 			}
 			
 			if(req.body.doctors_content != undefined) {
