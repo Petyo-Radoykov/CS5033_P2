@@ -12,69 +12,101 @@
     <script src="../js/settings.js"></script>
     <script src="../js/general.js"></script>
     <script>
-
-        window.onload = function WindowLoad(event) {
-            authenticate(event);
-        };
-
-        function authenticate(event) {
-            event.preventDefault();
-
+        $(document).ready(function () {
             var accessToken = window.localStorage.getItem("accessToken");
-            var url = serverBasePath + "user";
-            /*$.get(url, {"token": accessToken}, function(data, status){
-                if(status == "success") {
-                    alert(data);
-                    if (data.success != false && data.success !== "undefined") {
-                        if (data[0] !== 'undefined') {
-                            render_data(data[0]);
+
+            //Set the user's name in the top-left corner of the screen, within the menu bar
+            $(".navbar-brand").text(window.localStorage.getItem("userName"));
+
+            layout_table();
+
+            function load_doctor_list() {
+
+                return false;
+            }
+
+            function layout_table() {
+                var appointmentsUrl = serverBasePath + "booking";
+                var doctorUrl = serverBasePath + "doctor";
+
+                //We will use currentTimestamp to request all bookings from the API between
+                //unix epoch (timestamp=0) and current time.
+                var currentTimestamp = new Date().getTime()/1000;
+
+                //We now need to create a list of all doctors, so that when we get the
+                //list of bookings (containing doctor's IDs but not names) we can find
+                //the correct doctor's name to display in the list.
+
+                //beforeSend in the object provided to $.ajax adds the required headers to the request.
+
+                $.ajax({
+                    type: 'GET',
+                    url: doctorUrl,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('x-access-token', accessToken);
+                    },
+                    success: function (doctorData, doctorSuccess) {
+                        if (doctorSuccess==="success") {
+                            //Once doctor list data is successfully returned, we can now do a GET AJAX
+                            // request to look up all bookings for the user.
+                            $.ajax({
+                                type: 'GET',
+                                url: appointmentsUrl,
+                                beforeSend: function (xhr) {
+                                    xhr.setRequestHeader('x-access-token', accessToken);
+                                    xhr.setRequestHeader('start_date', 0);
+                                    xhr.setRequestHeader('end_date', currentTimestamp);
+                                },
+                                success: function (appointmentsData, appointmentsSuccess) {
+                                    if (appointmentsSuccess==="success") {
+                                        $.each(appointmentsData, function (key, value) {
+                                            //Construct a new Javascript Date object from the returned timestamp for this
+                                            //booking, so that we can format it for display below.
+                                            var date = new Date(value.date * 1000);
+
+                                            //Concatenate a string containing the HTML for a table row, then add this to the table.
+                                            var tableRow = "<tr>"
+                                                + "<td>" + getNeatDate(date) + "</td>"
+                                                + "<td>" + getNeatTime(date) + "</td>"
+                                                + "<td>" + findDoctorNameInList(doctorData, value.doctor_id) + "</td>"
+                                                + "<td>" + value.comment + "</td>"
+                                                + "</tr>";
+                                            $("#appointments_table tr:last").after(tableRow);
+                                        });
+                                    }
+                                }
+                            });
                         }
                     }
-                }
-                window.location.href = "../error.html";
-            });*/
-            render_data();
-            url = serverBasePath + "booking";
-            $.ajax({
-                type: 'GET',
-                url: url,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('x-access-token', accessToken);
-                    xhr.setRequestHeader('start_date', 0);
-                    xhr.setRequestHeader('end_date', 300000000000);
-                },
-                success: function (data, success) {
-                    if (success==="success") {
-                        $.each(data, function (key, value) {
-                            var date = new Date(value.date * 1000);
+                });
+            }
 
-                            var tableRow = "<tr>"
-                                + "<td>" + getNeatDate(date) + "</td>"
-                                + "<td>" + getNeatTime(date) + "</td>"
-                                + "<td>" + value.doctor_id + "</td>"
-                                + "</tr>";
-                            $("#appointments_table tr:last").after(tableRow);
-                        });
+            function findDoctorNameInList(doctorList, doctorId) {
+                var doctorName = "Unknown Doctor";
+                //Look round the list of doctors to find the name of the doctor with the given ID
+                $.each(doctorList, function (key, value) {
+                    if (value._id===doctorId) {
+                        doctorName = value.name;
                     }
-                }
-            });
-        }
-        
-        function getNeatTime(date) {
-            //get a formatted string to display the time, in the user's timezone
-            var hours = date.getHours();
-            var hoursFormatted = (hours > 9) ? hours: "0" + hours;
-            var minutes = date.getMinutes();
-            var minutesFormatted = (minutes > 9) ? minutes: "0" + minutes;
-            return hoursFormatted + ":" + minutesFormatted;
-        }
+                });
+                return doctorName;
+            }
 
-        function getNeatDate(date) {
-            //get a formatted string to display the date, in the user's timezone
-            return date.getDate() + " " + getMonthName(date.getMonth()) + " " + date.getFullYear();
-        }
+            function getNeatTime(date) {
+                //get a formatted string to display the time, in the user's timezone
+                var hours = date.getHours();
+                var hoursFormatted = (hours > 9) ? hours: "0" + hours;
+                var minutes = date.getMinutes();
+                var minutesFormatted = (minutes > 9) ? minutes: "0" + minutes;
+                return hoursFormatted + ":" + minutesFormatted;
+            }
 
-        function getMonthName(monthNumber) {switch (monthNumber) {
+            function getNeatDate(date) {
+                //get a formatted string to display the date, in the user's timezone
+                return date.getDate() + " " + getMonthName(date.getMonth()) + " " + date.getFullYear();
+            }
+
+            function getMonthName(monthNumber) {switch (monthNumber) {
                 case 0:
                     return "January";
                 case 1:
@@ -100,12 +132,8 @@
                 case 11:
                     return "December";
             }
-        }
-
-        function render_data(data) {
-            //Set the user's name in the top-left corner of the screen, within the menu bar
-            $(".navbar-brand").text(window.localStorage.getItem("userName"));
-        }
+            }
+        });
     </script>
 
 </head>
@@ -141,6 +169,7 @@
                 <th>Date</th>
                 <th>Time</th>
                 <th>Doctor/Nurse name</th>
+                <th>Comments</th>
             </tr>
             </thead>
         </table>

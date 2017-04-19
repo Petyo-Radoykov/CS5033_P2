@@ -5,10 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Patient Area</title>
-    <link rel="stylesheet" href="../css/bootstrap.min.css">
-    <link rel="stylesheet" href="../css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <link rel="stylesheet" href="../css/bootstrap-datepicker.min.css">
-    <link rel="stylesheet" href="../css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css">
     <script src="../js/jquery-3.2.1.min.js"></script>
     <script src="../js/moment.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -18,6 +18,9 @@
     <script src="../js/general.js"></script>
     <script>
         $(document).ready(function () {
+            //selectedTime keeps track of the time selected by the date_time_selection DOM element
+            var selectedTime = new Date().getTime()/1000;
+
             var accessToken = window.localStorage.getItem("accessToken");
             $(".navbar-brand").text(window.localStorage.getItem("userName"));
 
@@ -30,23 +33,22 @@
 
             //And when the date or time is changed, call reloading of the available doctors at this time.
             dateTimeSelector.on("dp.change", function (e) {
-                var startDateUnix = e.date.unix();
-                reload_available_doctors(startDateUnix);
+                selectedTime = e.date.unix();
+                reload_available_doctors();
             });
 
             //Set what happens when 'Make Booking' is clicked.
             $("#make_booking_button").on("click", function () {
                 var url = serverBasePath + "booking";
-
+                var doctorId = $("#doctor_selection").selectpicker('val');
                 //Get the UNIX timestamp of when the appointment should start.
-                var unixTimestampRequested = dateTimeSelector.data('date');
                 $.ajax({
                     type: 'POST',
                     url: url,
                     data: {
                         "token": window.localStorage.getItem("accessToken"),
-                        "doctor_id": 1,
-                        "date": unixTimestampRequested,
+                        "doctor_id": doctorId,
+                        "date": selectedTime,
                         "comment": $("#comments").val()
                     },
                     success: function (data, success) {
@@ -55,14 +57,15 @@
                 });
             });
 
-            reload_available_doctors(new Date().getTime()/1000);
+            reload_available_doctors();
 
-            function reload_available_doctors(startDateUnix) {
+            function reload_available_doctors() {
                 //We have assumed that each doctor's appointment is 1 hour long,
                 //thus the front-end asks only for the starting time not the finishing time.
                 //If requirements change to require a finish time to be specified by the patient,
                 //or for a different appointment length, this can be changed, either below
                 //or by setting a new value in defaultAppointmentLengthSeconds in the application settings.
+                var startDateUnix = selectedTime;
                 var endDateUnix = startDateUnix + defaultAppointmentLengthSeconds;
                 var url = serverBasePath + "booking/availability";
 
@@ -145,7 +148,8 @@
 
                 <br /><br />
                 <label for="comments">Any Specific Information:</label><br />
-                <input type="text" id="comments" style="width: 80vh; margin-bottom: 10px;">
+                <input type="text" id="comments" style="width: 80vh">
+                <br /><br />
                 <button type="button" id="make_booking_button">Make Booking</button>
             </div>
         </div>
